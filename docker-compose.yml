@@ -1,0 +1,32 @@
+version: "2.3"
+
+services:
+  mysql:
+    image: benzine/mariadb:10.4
+    restart: always
+    ports:
+      - '127.0.0.6:3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: &db-root-pass QfD8V8bOMCBY2TcMZFt9maFLi5neRuCQK8GN3aqZ
+      MYSQL_USER: &db-user mysql-health
+      MYSQL_PASSWORD: &db-pass YxHKSvO8yM1alupfejWyx6o90FXX5dmfBaosqcSr
+      MYSQL_DATABASE: &db-name mysql-health
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: matthewbaggett/mysql-proxy-health
+    volumes:
+      - ./:/app
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: *db-user
+      MYSQL_PASSWORD: *db-pass
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - '127.0.0.6:80:80'
